@@ -3,8 +3,6 @@ package com.mxh.bank.repository;
 import com.mxh.bank.model.po.BankAccountPo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -21,8 +19,4 @@ public interface AccountRepository extends JpaRepository<BankAccountPo, Long> {
 
     @Lock(PESSIMISTIC_WRITE)
     Optional<BankAccountPo> findWithLockByAccountNumber(String accountNumber);
-
-    @Query(value = "SELECT * FROM bank_account WHERE account_number = :accountNumber FOR UPDATE",
-            nativeQuery = true)
-    Optional<BankAccountPo> findByAccountNumberForUpdate(@Param("accountNumber") String accountNumber);
 }

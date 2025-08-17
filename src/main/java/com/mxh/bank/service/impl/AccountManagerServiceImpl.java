@@ -169,8 +169,8 @@ public class AccountManagerServiceImpl implements AccountManagerService {
             secondLock = toAccountNo;
         }
 
-        BankAccountPo firstAccount = accountRepository.findByAccountNumberForUpdate(firstLock).orElseThrow(() -> new BusinessException("BM-005", firstLock));
-        BankAccountPo secondAccount = accountRepository.findByAccountNumberForUpdate(secondLock).orElseThrow(() -> new BusinessException("BM-005", secondLock));
+        BankAccountPo firstAccount = accountRepository.findWithLockByAccountNumber(firstLock).orElseThrow(() -> new BusinessException("BM-005", firstLock));
+        BankAccountPo secondAccount = accountRepository.findWithLockByAccountNumber(secondLock).orElseThrow(() -> new BusinessException("BM-005", secondLock));
 
         BankAccountPo fromAccount = firstLock.equals(fromAccountNo) ? firstAccount : secondAccount;
         BankAccountPo toAccount = firstLock.equals(fromAccountNo) ? secondAccount : firstAccount;
