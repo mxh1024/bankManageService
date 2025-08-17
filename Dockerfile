@@ -14,25 +14,17 @@ RUN mvn clean package -DskipTests
 # 第二阶段：运行环境
 FROM openjdk:17-jdk-slim
 
-# 安装Redis
-RUN apt-get update && \
-    apt-get install -y redis-server && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
 # 设置工作目录
 WORKDIR /app
 
 # 从构建阶段复制打包好的jar文件
-COPY --from=build /app/target/AccountManagerService-1.0-SNAPSHOT.jar app.jar
+COPY --from=build /app/target/*.jar app.jar
 
-# 暴露应用端口和Redis端口
-EXPOSE 8080 6379
+EXPOSE 8080
 
 # 创建启动脚本，同时启动Redis和Spring Boot应用
 RUN echo '#!/bin/bash\n\
-service redis-server start\n\
-java -jar app.jar' > /app/start.sh && \
+java ${JAVA_OPTS} -jar app.jar' > /app/start.sh && \
 chmod +x /app/start.sh
 
 # 启动应用

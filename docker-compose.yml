@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # Redis服务
+  redis:
+    image: redis:7.2-alpine
+    container_name: microservice-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - microservice-network  # 加入自定义网络
+    healthcheck:  # 健康检查，确保Redis可用
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      - REDIS_PORT=6379
+
+  # 微服务应用
+  microservice-app:
+    image: account-manager:2.0
+    container_name: account-manager-app
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - microservice-network
+    environment:
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - JAVA_OPTS=-Xms1024m -Xmx1024m
+    healthcheck:
+      # 检测健康接口（根据实际接口路径调整）
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/bank-manager/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    volumes:
+      - ./logs:/app/logs
+
+# 自定义网络，确保服务之间可通过服务名通信
+networks:
+  microservice-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local  # 本地数据卷驱动
